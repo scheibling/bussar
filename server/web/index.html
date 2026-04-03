@@ -6,22 +6,100 @@
   <title>Departure Board</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="board-header">
     <span class="board-title">AVGÅNGAR · DEPARTURES</span>
     <span class="board-clock" id="clock"></span>
-    <button class="theme-btn" id="theme-toggle" title="Switch theme">Flipboard</button>
+    <button class="settings-btn" id="settings-open" title="Display settings" aria-label="Open display settings">&#9881;</button>
   </header>
 
   <main id="board"></main>
 
   <footer class="board-footer">
-    <span id="status">Loading…</span>
+    <span id="status">Loading&hellip;</span>
     <span id="error-banner" class="error-banner hidden"></span>
   </footer>
+
+  <!-- Settings Modal -->
+  <div id="settings-overlay" class="settings-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-modal">
+      <div class="settings-hd">
+        <span id="settings-title" class="settings-hd-title">DISPLAY SETTINGS</span>
+        <button class="settings-close" id="settings-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="settings-body">
+
+        <section class="settings-section">
+          <h3 class="settings-section-title">Theme</h3>
+          <div class="theme-cards" id="theme-cards">
+            <button class="theme-card" data-theme="theme-led">
+              <span class="theme-swatch swatch-led"></span>
+              <span class="theme-card-label">LED</span>
+              <span class="theme-card-sub">Dark amber display</span>
+            </button>
+            <button class="theme-card" data-theme="theme-flipboard">
+              <span class="theme-swatch swatch-flipboard"></span>
+              <span class="theme-card-label">Flipboard</span>
+              <span class="theme-card-sub">Split-flap Solari style</span>
+            </button>
+            <button class="theme-card" data-theme="theme-segment">
+              <span class="theme-swatch swatch-segment"></span>
+              <span class="theme-card-label">Segment</span>
+              <span class="theme-card-sub">King&rsquo;s Cross / airport</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title">Panel Layout</h3>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="layout" value="horizontal" />
+              <span class="radio-label">&#9646;&#9646; Horizontal &mdash; panels side by side</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="layout" value="vertical" />
+              <span class="radio-label">&#9647; Vertical &mdash; panels stacked full width</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title">Font Size</h3>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="fontsize" value="compact" />
+              <span class="radio-label">Compact</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fontsize" value="normal" />
+              <span class="radio-label">Normal</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="fontsize" value="large" />
+              <span class="radio-label">Large</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3 class="settings-section-title">Columns</h3>
+          <label class="toggle-option">
+            <span class="toggle-label">Show transport icons</span>
+            <span class="toggle-track"><input type="checkbox" id="toggle-icons" /><span class="toggle-knob"></span></span>
+          </label>
+          <label class="toggle-option">
+            <span class="toggle-label">Show countdown column</span>
+            <span class="toggle-track"><input type="checkbox" id="toggle-countdown" /><span class="toggle-knob"></span></span>
+          </label>
+        </section>
+
+      </div>
+    </div>
+  </div>
 
   <script src="/app.js"></script>
 </body>

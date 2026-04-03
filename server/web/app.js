@@ -14,36 +14,176 @@ let refreshTimer    = null;
 let countdownTimer  = null;
 let lastData        = null;
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
-const THEMES = ['theme-led', 'theme-flipboard'];
-const THEME_LABELS = { 'theme-led': 'Flipboard', 'theme-flipboard': 'LED' };
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════════════════
 
-function initTheme() {
-  const saved = localStorage.getItem('bussar-theme') || 'theme-led';
-  applyTheme(saved);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.addEventListener('click', toggleTheme);
+const SETTINGS_KEY = 'bussar-settings';
+
+const DEFAULTS = {
+  theme:         'theme-led',
+  layout:        'horizontal',
+  fontSize:      'normal',
+  showIcons:     true,
+  showCountdown: true,
+};
+
+const THEMES = ['theme-led', 'theme-flipboard', 'theme-segment'];
+
+let settings = Object.assign({}, DEFAULTS);
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) settings = Object.assign({}, DEFAULTS, JSON.parse(raw));
+  } catch (_) {}
 }
 
-function applyTheme(theme) {
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {}
+}
+
+function applySettings() {
   const html = document.documentElement;
+
+  // theme
   THEMES.forEach(function(t) { html.classList.remove(t); });
-  html.classList.add(theme);
-  localStorage.setItem('bussar-theme', theme);
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = THEME_LABELS[theme] || 'Switch';
+  html.classList.add(settings.theme);
+
+  // layout
+  html.classList.toggle('layout-vertical', settings.layout === 'vertical');
+
+  // font size
+  html.classList.remove('font-compact', 'font-large');
+  if (settings.fontSize === 'compact') html.classList.add('font-compact');
+  if (settings.fontSize === 'large')   html.classList.add('font-large');
+
+  // column visibility
+  html.classList.toggle('hide-icons',     !settings.showIcons);
+  html.classList.toggle('hide-countdown', !settings.showCountdown);
 }
 
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = THEMES.find(function(t) { return html.classList.contains(t); }) || THEMES[0];
-  const next = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
-  applyTheme(next);
+function initSettings() {
+  loadSettings();
+  applySettings();
+  initModal();
 }
 
-// ── Bootstrap ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+
+function initModal() {
+  var openBtn  = document.getElementById('settings-open');
+  var closeBtn = document.getElementById('settings-close');
+  var overlay  = document.getElementById('settings-overlay');
+  if (!overlay) return;
+
+  if (openBtn)  openBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Theme cards
+  document.querySelectorAll('.theme-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      settings.theme = card.dataset.theme;
+      saveSettings();
+      applySettings();
+      syncModalToSettings();
+    });
+  });
+
+  // Layout radios
+  document.querySelectorAll('input[name="layout"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      settings.layout = radio.value;
+      saveSettings();
+      applySettings();
+    });
+  });
+
+  // Font size radios
+  document.querySelectorAll('input[name="fontsize"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      settings.fontSize = radio.value;
+      saveSettings();
+      applySettings();
+    });
+  });
+
+  // Toggle: icons
+  var iconsToggle = document.getElementById('toggle-icons');
+  if (iconsToggle) {
+    iconsToggle.addEventListener('change', function() {
+      settings.showIcons = iconsToggle.checked;
+      saveSettings();
+      applySettings();
+    });
+  }
+
+  // Toggle: countdown
+  var countdownToggle = document.getElementById('toggle-countdown');
+  if (countdownToggle) {
+    countdownToggle.addEventListener('change', function() {
+      settings.showCountdown = countdownToggle.checked;
+      saveSettings();
+      applySettings();
+    });
+  }
+}
+
+function openModal() {
+  var overlay = document.getElementById('settings-overlay');
+  if (overlay) {
+    syncModalToSettings();
+    overlay.classList.remove('hidden');
+    var close = document.getElementById('settings-close');
+    if (close) close.focus();
+  }
+}
+
+function closeModal() {
+  var overlay = document.getElementById('settings-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  var openBtn = document.getElementById('settings-open');
+  if (openBtn) openBtn.focus();
+}
+
+function syncModalToSettings() {
+  // Theme cards
+  document.querySelectorAll('.theme-card').forEach(function(card) {
+    card.classList.toggle('active', card.dataset.theme === settings.theme);
+  });
+
+  // Layout radios
+  document.querySelectorAll('input[name="layout"]').forEach(function(radio) {
+    radio.checked = radio.value === settings.layout;
+  });
+
+  // Font size radios
+  document.querySelectorAll('input[name="fontsize"]').forEach(function(radio) {
+    radio.checked = radio.value === settings.fontSize;
+  });
+
+  // Toggles
+  var iconsToggle = document.getElementById('toggle-icons');
+  if (iconsToggle) iconsToggle.checked = settings.showIcons;
+
+  var countdownToggle = document.getElementById('toggle-countdown');
+  if (countdownToggle) countdownToggle.checked = settings.showCountdown;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ═══════════════════════════════════════════════════════════════════════════
+
 async function init() {
-  initTheme();
+  initSettings();
   startClock();
   await loadConfig();
   await refresh();
@@ -55,7 +195,7 @@ async function loadConfig() {
     if (!res.ok) return;
     const cfg = await res.json();
     refreshInterval = cfg.refresh_interval ?? 120;
-  } catch (_) { /* use default */ }
+  } catch (_) {}
 }
 
 function scheduleRefresh() {
@@ -84,7 +224,10 @@ async function refresh() {
   scheduleCountdown();
 }
 
-// ── Clock ────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════════════════════
+
 function startClock() {
   const el = document.getElementById('clock');
   function tick() {
@@ -96,7 +239,10 @@ function startClock() {
   setInterval(tick, 1000);
 }
 
-// ── Render board ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════════════
+
 function renderBoard(data) {
   const board = document.getElementById('board');
   board.innerHTML = '';
@@ -169,7 +315,7 @@ function buildTable(departures) {
   const now = new Date();
   departures.forEach(function(dep, idx) {
     const row = buildRow(dep, now);
-    row.style.animationDelay = (idx * 30) + 'ms';
+    row.style.animationDelay = (idx * 28) + 'ms';
     tbody.appendChild(row);
   });
 
@@ -178,7 +324,7 @@ function buildTable(departures) {
 
 function buildRow(dep, now) {
   const row = document.createElement('tr');
-  row.className = 'dep-row fade-in';
+  row.className = 'dep-row anim';
   row.dataset.scheduled = dep.scheduled;
   row.dataset.realtime  = dep.realtime ?? '';
 
@@ -250,14 +396,16 @@ function hmToMins(hm) {
 
 function computeCountdown(dep, now) {
   const timeStr = (dep.realtime && dep.realtime !== dep.scheduled) ? dep.realtime : dep.scheduled;
-  const today = now.toLocaleDateString('sv-SE'); // YYYY-MM-DD
+  const today = now.toLocaleDateString('sv-SE');
   const dt = new Date(today + 'T' + timeStr + ':00');
-  // Handle wrap past midnight: if computed time is > 2 h in the past, add a day.
   if (dt < now && (now - dt) > 2 * 3600000) dt.setDate(dt.getDate() + 1);
   return Math.max(0, Math.round((dt - now) / 60000));
 }
 
-// ── Live countdown updates (every 30 s, no network) ──────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE COUNTDOWNS
+// ═══════════════════════════════════════════════════════════════════════════
+
 function updateCountdowns() {
   const now = new Date();
   document.querySelectorAll('.dep-row').forEach(function(row) {
@@ -269,17 +417,18 @@ function updateCountdowns() {
   });
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
 function esc(str) {
   return String(str ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function formatTime(d) {
-  if (!(d instanceof Date) || isNaN(d)) return '—';
+  if (!(d instanceof Date) || isNaN(d)) return '\u2014';
   return d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
@@ -298,5 +447,8 @@ function hideError() {
   if (el) el.classList.add('hidden');
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', init);
