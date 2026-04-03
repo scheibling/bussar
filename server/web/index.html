@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-led">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Departure Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="board-header">
+    <span class="board-title">AVGÅNGAR · DEPARTURES</span>
+    <span class="board-clock" id="clock"></span>
+    <button class="theme-btn" id="theme-toggle" title="Switch theme">Flipboard</button>
+  </header>
+
+  <main id="board"></main>
+
+  <footer class="board-footer">
+    <span id="status">Loading…</span>
+    <span id="error-banner" class="error-banner hidden"></span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

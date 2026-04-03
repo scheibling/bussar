@@ -1,0 +1,11 @@
+{
+  "domain": "resrobot",
+  "name": "resrobot",
+  "after_dependencies": ["http", "rest"],
+  "codeowners": ["@iesus"],
+  "requirements": [],
+  "issue_tracker": "https://github.com/TekniskSupport/home-assistant-resrobot/issues",
+  "documentation": "https://github.com/TekniskSupport/home-assistant-resrobot/blob/master/info.md",
+  "version": "v0.0.20",
+  "iot_class": "cloud_polling"
+}

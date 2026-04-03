@@ -1,0 +1,360 @@
+/* ═══════════════════════════════════════════════════
+   Departure Board — style.css
+   Two themes:  theme-led (default)  |  theme-flipboard
+   ═══════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── LED theme variables (also serves as :root default) ──────────────────── */
+:root,
+html.theme-led {
+  --bg:            #090909;
+  --surface:       #0d0d0d;
+  --surface-head:  #111111;
+  --text:          #f0f0f0;
+  --text-sub:      #888888;
+  --accent:        #ffb300;
+  --accent-dim:    #c87d00;
+  --accent-glow:   #ffcc44;
+  --red:           #e53935;
+  --green:         #43a047;
+  --border:        rgba(255,179,0,0.25);
+  --row-border:    rgba(255,179,0,0.12);
+  --font:          "Roboto Mono", "Courier New", monospace;
+  --badge-bg:      transparent;
+  --badge-text:    var(--accent);
+  --badge-border:  var(--accent-dim);
+  --header-text:   var(--accent);
+  --header-border: 2px solid var(--accent);
+  --clock-glow:    0 0 12px rgba(255,204,68,0.5);
+  --flip-duration: 0.4s;
+  --flip-ease:     ease;
+}
+
+/* ── Flipboard theme variables ───────────────────────────────────────────── */
+html.theme-flipboard {
+  --bg:            #0e0c09;
+  --surface:       #1a1710;
+  --surface-head:  #131008;
+  --text:          #f0e8cc;
+  --text-sub:      #7a7060;
+  --accent:        #f5c842;
+  --accent-dim:    #c9a020;
+  --accent-glow:   #ffe070;
+  --red:           #cf4040;
+  --green:         #5a9e4c;
+  --border:        rgba(245,200,66,0.22);
+  --row-border:    #0a0806;
+  --font:          "Share Tech Mono", "Courier New", monospace;
+  --badge-bg:      #f5c842;
+  --badge-text:    #0e0c09;
+  --badge-border:  #f5c842;
+  --header-text:   #f5c842;
+  --header-border: 3px solid #f5c842;
+  --clock-glow:    none;
+  --flip-duration: 0.13s;
+  --flip-ease:     steps(4, end);
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: clamp(13px, 1.4vw, 16px);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.5rem;
+  background: var(--surface-head);
+  border-bottom: var(--header-border);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  gap: 1rem;
+}
+
+.board-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--header-text);
+}
+
+.board-clock {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--accent-glow);
+  text-shadow: var(--clock-glow);
+}
+
+.theme-btn {
+  margin-left: auto;
+  padding: 0.2em 0.7em;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  font-family: var(--font);
+  font-size: 0.65em;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+}
+.theme-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.board-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 1.5rem;
+  background: var(--surface-head);
+  border-top: 1px solid var(--border);
+  font-size: 0.75em;
+  color: var(--text-sub);
+}
+
+.error-banner { color: var(--red); font-weight: 700; }
+.hidden { display: none !important; }
+
+/* ── Board layout ───────────────────────────────────────────────────────── */
+#board {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  padding: 1rem;
+  min-height: calc(100vh - 6rem);
+  align-items: flex-start;
+}
+
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+.panel {
+  flex: 1 1 400px;
+  min-width: 320px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 0.5rem 0.75rem;
+  background: rgba(0,0,0,0.25);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--accent-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* separate mode: columns side-by-side */
+.panel.separate .columns-wrap {
+  display: flex;
+  flex: 1;
+}
+.panel.separate .column {
+  flex: 1;
+  border-right: 1px solid var(--border);
+}
+.panel.separate .column:last-child { border-right: none; }
+
+.column-header {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72em;
+  color: var(--accent-dim);
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--row-border);
+  text-transform: uppercase;
+}
+
+/* ── Departure table ────────────────────────────────────────────────────── */
+.dep-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dep-table thead th {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.65em;
+  font-weight: 400;
+  color: var(--text-sub);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--row-border);
+}
+.dep-table thead th.th-time  { text-align: right; }
+.dep-table thead th.th-count { text-align: right; }
+
+.dep-row {
+  border-bottom: 1px solid var(--row-border);
+  transition: opacity 0.2s;
+}
+
+.dep-row td {
+  padding: 0.45rem 0.75rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* icon */
+.td-icon { width: 2em; text-align: center; }
+.transport-icon { font-size: 1em; }
+
+/* line badge */
+.td-line { width: 3.5em; }
+.line-badge {
+  display: inline-block;
+  padding: 0.1em 0.4em;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  color: var(--badge-text);
+  font-size: 0.85em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 2px;
+  min-width: 2.2em;
+  text-align: center;
+}
+
+/* direction */
+.td-direction {
+  max-width: 18em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* time */
+.td-time { text-align: right; white-space: nowrap; }
+.sched-time { color: var(--accent); font-weight: 600; }
+.rt-time    { color: var(--accent-glow); font-size: 0.8em; margin-left: 0.3em; }
+.rt-late    { color: var(--red); }
+.rt-early   { color: var(--green); }
+
+/* countdown */
+.td-count {
+  text-align: right;
+  width: 5em;
+  font-weight: 700;
+}
+.countdown-now      { color: var(--accent-glow); text-shadow: var(--clock-glow); }
+.countdown-soon     { color: var(--accent); }
+.countdown-boarding { color: var(--accent-dim); }
+.countdown-normal   { color: var(--text); }
+.countdown-cancelled{ color: var(--red); text-decoration: line-through; }
+
+/* empty state */
+.empty-row td {
+  padding: 1.5rem 0.75rem;
+  color: var(--text-sub);
+  font-size: 0.8em;
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+
+/* ═══════════════════════════════════════════════════
+   LED THEME — extras
+   ═══════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+html.theme-led .dep-row.fade-in {
+  animation: fadeIn var(--flip-duration) var(--flip-ease) forwards;
+}
+
+/* scanline overlay */
+html.theme-led #board::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.03) 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 999;
+}
+
+/* ═══════════════════════════════════════════════════
+   FLIPBOARD THEME — extras
+   ═══════════════════════════════════════════════════ */
+
+/* flip-in: wipe from top like a card dropping */
+@keyframes flipIn {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
+}
+
+html.theme-flipboard .dep-row.fade-in {
+  animation: flipIn var(--flip-duration) var(--flip-ease) forwards;
+}
+
+/* each row is a flip-card tile with a fold line at the midpoint */
+html.theme-flipboard .dep-row td {
+  background: linear-gradient(
+    to bottom,
+    #1f1c13 0%,
+    #1f1c13 calc(50% - 1px),
+    #070604 calc(50% - 1px),
+    #070604 calc(50% + 1px),
+    #151309 calc(50% + 1px),
+    #151309 100%
+  );
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+/* panel header: bolder, typeset like a real station board */
+html.theme-flipboard .panel-header {
+  padding: 0.6rem 0.75rem;
+  letter-spacing: 0.2em;
+  font-size: 0.75em;
+  background: #0a0805;
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+/* column header */
+html.theme-flipboard .column-header {
+  background: #0d0b07;
+  color: var(--accent-dim);
+  border-bottom-color: var(--accent-dim);
+}
+
+/* table header */
+html.theme-flipboard .dep-table thead th {
+  background: #0d0b07;
+  border-bottom: 2px solid #302810;
+}
+
+/* direction text is cream, slightly dimmer */
+html.theme-flipboard .td-direction {
+  color: #d4caa0;
+}
+
+/* the clock has no glow — clean, mechanical */
+html.theme-flipboard .board-clock {
+  letter-spacing: 0.08em;
+}
+
+/* panel border is thicker, architectural */
+html.theme-flipboard .panel {
+  border: 1px solid #302a18;
+}

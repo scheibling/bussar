@@ -1,0 +1,76 @@
+# bussar — example configuration
+# Copy this to config.yaml and fill in your values.
+# Get a free API key at: https://www.trafiklab.se/api/trafiklab-apis/resrobot-v21/
+
+# ── Required ─────────────────────────────────────────────────────────────────
+
+# Your Trafiklab / ResRobot API access ID.
+api_key: "YOUR_TRAFIKLAB_API_KEY"
+
+# ── Optional (with defaults) ──────────────────────────────────────────────────
+
+# How often (in seconds) the board fetches fresh data from the API.
+# Default: 120
+refresh_interval: 120
+
+# TCP address the HTTP server listens on.
+# Default: ":8080"
+listen_addr: ":8080"
+
+# ── Panels ────────────────────────────────────────────────────────────────────
+# Each panel appears as a section on the board. Use multiple panels to group
+# related stops (e.g. "City" and "Local").
+#
+# Panel modes:
+#   combined  — all stops in the panel are merged into one list sorted by time
+#   separate  — each stop is shown as its own column side-by-side
+
+panels:
+  # Example 1 — combined view of two inner-city stops
+  - name: "City Centre"
+    mode: combined
+    stops:
+      - id: 740000001        # Stockholm Centralstation
+        max_departures: 10
+        transport_types:     # leave empty (or omit) to show all types
+          - bus
+          - tram
+        # filter_lines:      # uncomment to restrict to specific line numbers
+        #   - "55"
+        #   - "76"
+
+      - id: 740000005        # Uppsala Centralstation
+        max_departures: 5
+        # No transport_types filter → show everything
+
+  # Example 2 — separate columns for two suburban stops
+  - name: "Local Routes"
+    mode: separate
+    stops:
+      - id: 740000027        # Märsta station
+        name: "Märsta"       # optional display name override
+        max_departures: 8
+        filter_lines:
+          - "583"
+          - "592"
+
+      - id: 740000031        # Flemingsberg station
+        name: "Flemingsberg"
+        max_departures: 8
+        transport_types:
+          - train
+        filter_directions:   # only show trains heading towards Stockholm
+          - "Stockholm"
+
+# ── Transport types reference ─────────────────────────────────────────────────
+# Valid values for transport_types:
+#   bus    — city and regional buses
+#   tram   — trams / light rail
+#   train  — regional and long-distance trains
+#   metro  — subway / tunnelbana
+#   ferry  — ferries
+#
+# ── Finding stop IDs ──────────────────────────────────────────────────────────
+# A list of stops and their IDs is provided in stops.txt.
+# You can also search interactively at:
+#   https://www.resrobot.se/api/v2.1/location.name?input=stockholm&format=json&accessId=YOUR_KEY
