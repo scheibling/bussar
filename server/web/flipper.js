@@ -7,6 +7,7 @@ const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ0123456789 :.·-';
 // Strings are uppercased and padded/truncated to these widths.
 const COLS = [
   { key: 'time',      width: 8,  label: 'Time'        },
+  { key: 'delay',     width: 8,  label: 'Status'      },
   { key: 'direction', width: 24, label: 'Destination' },
   { key: 'line',      width: 5,  label: 'Line'        },
   { key: 'timeLeft',  width: 8,  label: 'In'          },
@@ -103,6 +104,10 @@ function buildRow(dep, rowIndex) {
     if (col.key === 'timeLeft' && typeof depVal === 'number') {
       depVal = depVal <= 0 ? 'Now' : depVal + ' min';
     }
+    if (col.key === 'delay' && typeof depVal === 'number') {
+      var mins = Math.round(depVal / 60);
+      depVal = mins === 0 ? 'On Time' : (mins > 0 ? '+ ' + mins + ' min' : '- ' + Math.abs(mins) + ' min');
+    }
 
     var text = pad(depVal, col.width);
 
@@ -137,6 +142,10 @@ function updateRow(row, dep) {
     console.log('Updating', col.key, 'to', depVal);
     if (col.key === 'timeLeft' && typeof depVal === 'number') {
       depVal = depVal <= 0 ? 'Now' : depVal + ' min';
+    }
+    if (col.key === 'delay' && typeof depVal === 'number') {
+      var mins = Math.round(depVal / 60);
+      depVal = mins === 0 ? 'On Time' : (mins > 0 ? '+ ' + mins + ' min' : '- ' + Math.abs(mins) + ' min');
     }
 
     var tiles = cell.querySelectorAll('.tile');

@@ -275,10 +275,11 @@ type flipperResponse struct {
 
 type flipperRow struct {
 	Time      string `json:"time"`
+	Delay     int    `json:"delay"`    // seconds; negative=early, 0=on-time, positive=late
 	Direction string `json:"direction"`
 	Line      string `json:"line"`
+	TimeLeft  int    `json:"timeLeft,omitempty"`
 	Stop      string `json:"stop"`
-	TimeLeft  int    `json:"timeLeft,omitempty"` // "5 min", "1 min", "Now", etc.
 }
 
 func (s *Server) handleFlipperUI(w http.ResponseWriter, r *http.Request) {
@@ -345,10 +346,11 @@ func (s *Server) handleFlipperAPI(w http.ResponseWriter, r *http.Request) {
 		}
 		rows = append(rows, flipperRow{
 			Time:      t.Format("15:04"),
+			Delay:     d.DelaySeconds,
 			Direction: d.Direction,
 			Line:      d.Line,
-			Stop:      d.StopName,
 			TimeLeft:  d.CountdownMinutes(now),
+			Stop:      d.StopName,
 		})
 	}
 

@@ -47,6 +47,8 @@ func catCodeToType(code int) TransportType {
 }
 
 // Departure represents a single departure row.
+// DelaySeconds is negative for early, positive for late, zero for on-time.
+// Only populated when the source provides an explicit delay value (realtime API).
 type Departure struct {
 	StopName      string        `json:"stop"`
 	Line          string        `json:"line"`
@@ -55,6 +57,7 @@ type Departure struct {
 	Realtime      *time.Time    `json:"realtime,omitempty"`
 	TransportType TransportType `json:"transport_type"`
 	Cancelled     bool          `json:"cancelled"`
+	DelaySeconds  int           `json:"delay_seconds"`
 }
 
 // CountdownMinutes returns minutes until departure, using realtime if available.

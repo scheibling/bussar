@@ -76,6 +76,7 @@ type rtResponse struct {
 type rtDeparture struct {
 	Scheduled string `json:"scheduled"`
 	Realtime  string `json:"realtime"`
+	Delay     int    `json:"delay"` // seconds; negative = early
 	Canceled  bool   `json:"canceled"`
 	Route     struct {
 		Designation   string `json:"designation"`
@@ -135,6 +136,7 @@ func parseRTDepartures(raw []rtDeparture) []Departure {
 			Scheduled:     sched,
 			TransportType: rtModeToType(r.Route.TransportMode),
 			Cancelled:     r.Canceled,
+			DelaySeconds:  r.Delay,
 		}
 
 		if r.Realtime != "" {
