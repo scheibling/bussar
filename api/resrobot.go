@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -79,6 +81,7 @@ type apiDeparture struct {
 	Name          string       `json:"name"`
 	Stop          string       `json:"stop"`
 	Direction     string       `json:"direction"`
+	Destination   string       `json:"destination"`
 	Date          string       `json:"date"`
 	Time          string       `json:"time"`
 	RtDate        string       `json:"rtDate"`
@@ -86,6 +89,7 @@ type apiDeparture struct {
 	Cancelled     string       `json:"cancelled"`
 	Product       []apiProduct `json:"Product"`
 	JourneyStatus string       `json:"JourneyStatus"`
+	DirectionFlag string       `json:"directionFlag"`
 }
 
 type apiProduct struct {
@@ -173,6 +177,16 @@ func (c *Client) fetch(ctx context.Context, stopID, maxJourneys int) ([]Departur
 		return nil, fmt.Errorf("resrobot: API returned HTTP %d", resp.StatusCode)
 	}
 
+	debugData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("resrobot: read response body: %w", err)
+	}
+	fmt.Printf("DEBUG: API response: %s\n", string(debugData))
+
+	os.WriteFile("debugresponse.json", debugData, 0o777)
+
+	resp.Body = io.NopCloser(strings.NewReader(string(debugData)))
+
 	var result apiResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("resrobot: decode response: %w", err)
@@ -218,6 +232,11 @@ func parseDepartures(raw []apiDeparture) []Departure {
 			if rt, err := parseDateTime(r.RtDate, r.RtTime); err == nil {
 				dep.Realtime = &rt
 			}
+		}
+
+		// Overrides
+		if strings.ToLower(r.Direction) == "uppsala gränbystaden" && r.DirectionFlag == "2" {
+			dep.Direction = "Science Park, Akademiska sjukhuset"
 		}
 
 		out = append(out, dep)

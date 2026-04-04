@@ -22,6 +22,7 @@ func main() {
 		Addr:            cfg.ListenAddr,
 		RefreshInterval: cfg.RefreshInterval,
 		APIKey:          cfg.APIKey,
+		RealtimeKey:     cfg.RealtimeKey,
 	}
 	for _, p := range cfg.Panels {
 		panel := server.PanelSpec{

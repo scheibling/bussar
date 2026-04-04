@@ -38,20 +38,23 @@ type Config struct {
 	Addr            string
 	RefreshInterval int
 	APIKey          string
+	RealtimeKey     string
 	Panels          []PanelSpec
 }
 
 // Server runs the HTTP departure board.
 type Server struct {
-	cfg    Config
-	client *api.Client
+	cfg            Config
+	client         *api.Client
+	realtimeClient *api.RealtimeClient
 }
 
 // New creates a new Server.
 func New(cfg Config) *Server {
 	return &Server{
-		cfg:    cfg,
-		client: api.NewClient(cfg.APIKey),
+		cfg:            cfg,
+		client:         api.NewClient(cfg.APIKey),
+		realtimeClient: api.NewRealtimeClient(cfg.RealtimeKey),
 	}
 }
 
@@ -61,6 +64,8 @@ func (s *Server) Run() error {
 
 	mux.HandleFunc("/api/departures", s.handleDepartures)
 	mux.HandleFunc("/api/config", s.handleConfig)
+	mux.HandleFunc("/api/flipper", s.handleFlipperAPI)
+	mux.HandleFunc("/flipper", s.handleFlipperUI)
 	mux.HandleFunc("/", handleStatic)
 
 	srv := &http.Server{
@@ -259,6 +264,98 @@ func toResponse(d api.Departure, now time.Time) departureResponse {
 		dr.Realtime = d.Realtime.Format("15:04")
 	}
 	return dr
+}
+
+// --- /flipper ----------------------------------------------------------------
+
+type flipperResponse struct {
+	RefreshInterval int          `json:"refresh_interval"`
+	Departures      []flipperRow `json:"departures"`
+}
+
+type flipperRow struct {
+	Time      string `json:"time"`
+	Direction string `json:"direction"`
+	Line      string `json:"line"`
+	Stop      string `json:"stop"`
+	TimeLeft  int    `json:"timeLeft,omitempty"` // "5 min", "1 min", "Now", etc.
+}
+
+func (s *Server) handleFlipperUI(w http.ResponseWriter, r *http.Request) {
+	data, err := webFS.ReadFile("web/flipper.html")
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write(data)
+}
+
+func (s *Server) handleFlipperAPI(w http.ResponseWriter, r *http.Request) {
+	if len(s.cfg.Panels) == 0 {
+		writeJSON(w, http.StatusOK, flipperResponse{
+			RefreshInterval: s.cfg.RefreshInterval,
+			Departures:      []flipperRow{},
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	ttl := time.Duration(s.cfg.RefreshInterval) * time.Second
+	now := time.Now()
+	panel := s.cfg.Panels[0]
+
+	var all []api.Departure
+	maxTotal := 0
+	for _, stop := range panel.Stops {
+		fetchMax := stop.MaxDepartures * 5
+		if fetchMax < 50 {
+			fetchMax = 50
+		}
+		raw, err := s.realtimeClient.FetchDepartures(ctx, stop.ID, fetchMax, ttl)
+		if err != nil {
+			log.Printf("flipper stop %d: realtime fetch error: %v", stop.ID, err)
+		}
+		f := api.Filter{
+			TransportTypes:   stop.TransportTypes,
+			FilterLines:      stop.FilterLines,
+			FilterDirections: stop.FilterDirections,
+		}
+		deps := f.Apply(raw)
+		if len(deps) > stop.MaxDepartures {
+			deps = deps[:stop.MaxDepartures]
+		}
+		all = append(all, deps...)
+		maxTotal += stop.MaxDepartures
+	}
+	sort.Slice(all, func(i, j int) bool {
+		return effectiveTime(all[i]).Before(effectiveTime(all[j]))
+	})
+	if len(all) > maxTotal {
+		all = all[:maxTotal]
+	}
+
+	rows := make([]flipperRow, 0, len(all))
+	for _, d := range all {
+		t := d.Scheduled
+		if d.Realtime != nil {
+			t = *d.Realtime
+		}
+		rows = append(rows, flipperRow{
+			Time:      t.Format("15:04"),
+			Direction: d.Direction,
+			Line:      d.Line,
+			Stop:      d.StopName,
+			TimeLeft:  d.CountdownMinutes(now),
+		})
+	}
+
+	writeJSON(w, http.StatusOK, flipperResponse{
+		RefreshInterval: s.cfg.RefreshInterval,
+		Departures:      rows,
+	})
 }
 
 // --- helpers -----------------------------------------------------------------

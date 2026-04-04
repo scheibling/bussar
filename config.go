@@ -64,6 +64,8 @@ type PanelConfig struct {
 type Config struct {
 	// APIKey is the Trafiklab / ResRobot access ID (required).
 	APIKey string `yaml:"api_key"`
+	// RealtimeKey is the Trafiklab Realtime API key, used by the /flipper endpoint.
+	RealtimeKey string `yaml:"realtime_key"`
 	// RefreshInterval is how often (in seconds) the board fetches fresh data. Default: 120.
 	RefreshInterval int `yaml:"refresh_interval"`
 	// ListenAddr is the TCP address the HTTP server listens on. Default: ":8080".

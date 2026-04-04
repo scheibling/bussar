@@ -1,0 +1,170 @@
+/* Split-flap departure board — flipper.css */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0b0907;
+  --header-bg:   #0e0b07;
+  --tile-bg:     #181410;
+  --tile-border: #2a2218;
+  --fold-line:   rgba(0, 0, 0, 0.75);
+  --text:        #f5c842;
+  --text-dim:    #7a6020;
+  --font:        'Share Tech Mono', 'Courier New', monospace;
+  --fs:          clamp(0.85rem, 2vw, 1.55rem);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs);
+  overflow-x: auto;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+#flipper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55em 1.1em;
+  background: var(--header-bg);
+  border-bottom: 2px solid var(--text);
+}
+
+.hdr-title {
+  font-size: 1.35em;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+}
+
+.hdr-clock {
+  font-size: 1.1em;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+#refresh-btn {
+  background: transparent;
+  border: 1px solid var(--text-dim);
+  color: var(--text-dim);
+  font-size: 1.3em;
+  width: 1.8em;
+  height: 1.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+#refresh-btn:hover { border-color: var(--text); color: var(--text); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+#refresh-btn.spinning { animation: spin 0.6s linear infinite; cursor: default; }
+
+/* ── Board ───────────────────────────────────────────────────────────────── */
+
+#board {
+  padding: 0.5em 0.8em;
+}
+
+/* ── Header Row ──────────────────────────────────────────────────────────── */
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5em, 1.5vw, 1.2em);
+  padding: 0.3em 0 0.2em;
+  border-bottom: 1px solid rgba(245, 200, 66, 0.2);
+  margin-bottom: 0.1em;
+}
+
+/* font-size stays at 1em so that ch resolves at the same scale as the tiles */
+.header-cell {
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.header-label {
+  display: block;
+  font-size: 0.58em;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* ── Departure Row ───────────────────────────────────────────────────────── */
+
+.dep-row {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(0.5em, 1.5vw, 1.2em);
+  padding: 0.22em 0;
+  border-bottom: 1px solid rgba(245, 200, 66, 0.07);
+}
+
+/* ── Cell ────────────────────────────────────────────────────────────────── */
+
+.dep-cell {
+  display: flex;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+/* ── Character Tile ──────────────────────────────────────────────────────── */
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3ch;
+  height: 1.55em;
+  font-family: var(--font);
+  font-size: 1em;
+  color: var(--text);
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-border);
+  border-radius: 2px;
+  position: relative;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Centre fold line — simulates the physical card hinge */
+.tile::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--fold-line);
+  pointer-events: none;
+}
+
+/* Space tiles are invisible but hold their width */
+.tile-space {
+  background: transparent;
+  border-color: transparent;
+}
+.tile-space::after { display: none; }
+
+/* ── Flip Animation ──────────────────────────────────────────────────────── */
+
+/* scaleY collapses the card to a horizontal sliver at 50%, then back out.
+   The JS changes the character content exactly when scaleY is near zero. */
+@keyframes tile-flip {
+  0%   { transform: scaleY(1);    filter: brightness(1); }
+  40%  { transform: scaleY(0.06); filter: brightness(0.12); }
+  60%  { transform: scaleY(0.06); filter: brightness(0.12); }
+  100% { transform: scaleY(1);    filter: brightness(1); }
+}
+
+.tile.flip {
+  animation: tile-flip 0.14s ease-in-out;
+}
