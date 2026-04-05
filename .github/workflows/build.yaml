@@ -3,6 +3,12 @@ name: ci
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'images/**'
+      - 'LICENSE'
+      - 'stops.txt'
+      - '.gitignore'
 
 jobs:
   docker:
