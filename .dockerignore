@@ -1,0 +1,8 @@
+images/
+.github/
+.git/
+config.yaml
+config.example.yaml
+stops.txt
+README.md
+LICENSE
