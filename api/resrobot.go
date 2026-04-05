@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -180,15 +179,7 @@ func (c *Client) fetch(ctx context.Context, stopID, maxJourneys int) ([]Departur
 		return nil, fmt.Errorf("resrobot: API returned HTTP %d", resp.StatusCode)
 	}
 
-	debugData, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("resrobot: read response body: %w", err)
-	}
-	fmt.Printf("DEBUG: API response: %s\n", string(debugData))
-
-	os.WriteFile("debugresponse.json", debugData, 0o777)
-
-	resp.Body = io.NopCloser(strings.NewReader(string(debugData)))
+	resp.Body = io.NopCloser(resp.Body)
 
 	var result apiResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {

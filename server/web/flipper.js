@@ -6,12 +6,12 @@ const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ0123456789 :.·-';
 // Fixed display widths (characters) for each column.
 // Strings are uppercased and padded/truncated to these widths.
 const COLS = [
-  { key: 'time',      width: 8,  label: 'Time'        },
+  { key: 'line',      width: 1,  label: '#'        },
+  { key: 'timeLeft',  width: 7,  label: 'In'          },
+  { key: 'direction', width: 26, label: 'Destination' },
+  { key: 'time',      width: 5,  label: 'Time'        },
+  { key: 'stop',      width: 16, label: 'Stop'        },
   { key: 'delay',     width: 8,  label: 'Status'      },
-  { key: 'direction', width: 24, label: 'Destination' },
-  { key: 'line',      width: 5,  label: 'Line'        },
-  { key: 'timeLeft',  width: 8,  label: 'In'          },
-  { key: 'stop',      width: 20, label: 'Stop'        },
 ];
 
 let refreshInterval = 120;
@@ -96,7 +96,22 @@ function buildRow(dep, rowIndex) {
 
   COLS.forEach(function (col) {
     var cell = document.createElement('div');
-    cell.className = 'dep-cell cell-' + col.key;
+    var color = "";
+    if (col.key === 'line') {
+      switch (dep[col.key]) {
+        case '1': color = 'line-1'; break;
+        case '2': color = 'line-2'; break;
+        case '3': color = 'line-3'; break;
+        case '4': color = 'line-4'; break;
+        case '5': color = 'line-5'; break;
+        case '6': color = 'line-6'; break;
+        case '7': color = 'line-7'; break;
+        case '8': color = 'line-8'; break;
+        case '9': color = 'line-9'; break;
+        default:  color = '';
+      }
+    }
+    cell.className = 'dep-cell cell-' + col.key + (color ? ' ' + color : '');
 
     let depVal = dep[col.key];
     console.log('Updating', col.key, 'to', depVal);
@@ -109,8 +124,12 @@ function buildRow(dep, rowIndex) {
       depVal = mins === 0 ? 'On Time' : (mins > 0 ? '+ ' + mins + ' min' : '- ' + Math.abs(mins) + ' min');
     }
 
+    // if (col.key === 'line') {
+    //   depVal = ' ' + depVal;
+    // } 
+    
     var text = pad(depVal, col.width);
-
+    
     for (var i = 0; i < col.width; i++) {
       var tile = document.createElement('span');
       tile.className = 'tile tile-space';

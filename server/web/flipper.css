@@ -135,6 +135,21 @@ html, body {
   flex-shrink: 0;
 }
 
+.line-1 .flip {
+  color: black !important;
+  background-color: white !important;
+}
+
+.line-4 .flip {
+  color: white !important;
+  background-color: #df1995 !important;
+}
+
+.line-7 .flip {
+  background-color: #00a3e0 !important;
+  color: white !important;
+}
+
 /* Centre fold line — simulates the physical card hinge */
 .tile::after {
   content: '';

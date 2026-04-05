@@ -91,6 +91,7 @@ type rtDeparture struct {
 // --- fetch -------------------------------------------------------------------
 
 func (c *RealtimeClient) fetchRT(ctx context.Context, stopID int) ([]Departure, error) {
+	// rawURL := fmt.Sprintf("%s/%d/2026-04-06T08:30?key=%s", realtimeEndpoint, stopID, c.apiKey)
 	rawURL := fmt.Sprintf("%s/%d?key=%s", realtimeEndpoint, stopID, c.apiKey)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
