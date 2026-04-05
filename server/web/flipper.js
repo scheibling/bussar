@@ -116,8 +116,13 @@ function buildRow(dep, rowIndex) {
     let depVal = dep[col.key];
     console.log('Updating', col.key, 'to', depVal);
 
-    if (col.key === 'timeLeft' && typeof depVal === 'number') {
-      depVal = depVal <= 0 ? 'Now' : depVal + ' min';
+    if (col.key === 'timeLeft') {
+      if (typeof depVal === 'number') {
+        depVal = depVal <= 0 ? 'Now' : depVal + ' min';
+      }
+      if (depVal === undefined) {
+        depVal = 'Now';
+      }
     }
     if (col.key === 'delay' && typeof depVal === 'number') {
       var mins = Math.round(depVal / 60);
